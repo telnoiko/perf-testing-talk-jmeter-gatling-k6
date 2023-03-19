@@ -1,0 +1,12 @@
+/logs/
+/target/
+/var/
+/.vscode/
+/.idea/
+/bin/
+/.git/
+
+# source files
+docker-compose.yml
+Makefile
+
