@@ -8,5 +8,5 @@
 
 # source files
 docker-compose.yml
-Makefile
+../Makefile
 
