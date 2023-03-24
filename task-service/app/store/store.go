@@ -27,7 +27,7 @@ func (s *Store) Save(user *User) (int, error) {
 	}
 
 	var id int
-	err = s.pool.QueryRow(context.Background(), "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id", user.Name, user.Email, hash).Scan(&id)
+	_, err = s.pool.Exec(context.Background(), "INSERT INTO users (name, email, password, tokens) VALUES ($1, $2, $3, $4) RETURNING id", user.Name, user.Email, hash, user.Tokens)
 	if err != nil {
 		log.Printf("QueryRow failed: %v\n", err)
 		return 0, err
@@ -35,9 +35,8 @@ func (s *Store) Save(user *User) (int, error) {
 	return id, nil
 }
 
-func (s Store) UpdateToken(id int, token string) error {
+func (s *Store) UpdateToken(id int, token string) error {
 	tag, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = array_append(tokens, $1) WHERE id = $2", token, id)
-	log.Printf("Rows affected: %d", tag.RowsAffected())
 	if err != nil {
 		log.Printf("Exec failed: %v\n", err)
 		return err
@@ -45,20 +44,14 @@ func (s Store) UpdateToken(id int, token string) error {
 	return nil
 }
 
-func (s Store) FindByCredentials(email string, password string) (User, error) {
+func (s *Store) FindByEmail(email string) (*User, error) {
 	var u User
 	err := s.pool.QueryRow(context.Background(), "SELECT id, name, email, password FROM users WHERE email = $1", email).Scan(&u.ID, &u.Name, &u.Email, &u.Password)
 	if err != nil {
 		log.Printf("QueryRow failed: %v\n", err)
-		return User{}, err
+		return &User{}, err
 	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	if err != nil {
-		log.Printf("CompareHashAndPassword failed: %v\n", err)
-		return User{}, err
-	}
-	return u, nil
+	return &u, nil
 }
 
 func (s *Store) Stop() {

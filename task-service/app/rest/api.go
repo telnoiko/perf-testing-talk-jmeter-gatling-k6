@@ -1,12 +1,11 @@
 package rest
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
-	"os"
 	"task-service/app/store"
 )
 
@@ -26,11 +25,6 @@ type UserApiResponse struct {
 	Token string        `json:"token"`
 }
 
-type UserApiResponse2 struct {
-	User  *store.User `json:"user"`
-	Token string      `json:"token"`
-}
-
 func New(auth *Authorizer, store *store.Store) *API {
 	e := echo.New()
 	e.Logger.SetLevel(log.INFO)
@@ -43,8 +37,8 @@ func New(auth *Authorizer, store *store.Store) *API {
 
 func (s *API) Start() {
 	s.echo.GET("/", s.check())
-	s.echo.POST("/users", s.save())
-	s.echo.POST("/login", s.login())
+	s.echo.POST("/users", s.create())
+	s.echo.POST("/users/login", s.login())
 	//e.POST("/logout", rest.check(), s.authorizer.Authorize)
 
 	//e.GET("/tasks", rest.check(), s.authorizer.Authorize)
@@ -58,25 +52,27 @@ func (s *API) Start() {
 
 func (s *API) check() func(c echo.Context) error {
 	return func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+		return c.String(http.StatusOK, "")
 	}
 }
 
-func (s *API) save() func(c echo.Context) error {
+func (s *API) create() func(c echo.Context) error {
 	return func(c echo.Context) error {
 		user := store.User{}
 		c.Bind(&user)
+		c.Logger().Infof("create: received user: %v\n", user)
 
-		id, err := s.store.Save(&user)
+		jwt, err := s.authorizer.GenerateJWT(user.Email)
+		user.Tokens = append(user.Tokens, jwt)
 		if err != nil {
-			fmt.Println(os.Stderr, err)
-			return c.String(http.StatusBadRequest, "Unable to save user")
+			s.echo.Logger.Infof("Unable to generage JWT: %v\n", err)
+			return c.String(http.StatusInternalServerError, "Unable to generage JWT")
 		}
 
-		jwt, err := s.authorizer.GenerateJWT(id)
+		_, err = s.store.Save(&user)
 		if err != nil {
-			fmt.Println(os.Stderr, err)
-			return c.String(http.StatusInternalServerError, "Unable to generage JWT")
+			s.echo.Logger.Infof("Unable to create user: %v\n", err)
+			return c.String(http.StatusBadRequest, "Unable to create user")
 		}
 
 		response := UserApiResponse{User: SanitizedUser{user.Name, user.Email}, Token: jwt}
@@ -86,22 +82,35 @@ func (s *API) save() func(c echo.Context) error {
 
 func (s *API) login() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		user := c.Get(UserContextKey).(*store.User)
-		if user == nil {
+		user := store.User{}
+		c.Bind(&user)
+		c.Logger().Infof("login: received user: %v\n", user)
+
+		foundUser, err := s.store.FindByEmail(user.Email)
+		if err != nil {
+			c.Logger().Warnf("FindByEmail failed: %v\n", err)
 			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
 
-		foundUser, err := s.store.FindByCredentials(user.Email, user.Password)
+		c.Echo().Logger.Infof("foundUser: %v\n", foundUser)
+
+		err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password))
+		if err != nil {
+			c.Logger().Warnf("CompareHashAndPassword failed: %v\n", err)
+			return c.String(http.StatusUnauthorized, "Unauthorized")
+		}
+
+		jwt, err := s.authorizer.GenerateJWT(foundUser.Email)
+		if err != nil {
+			s.echo.Logger.Infof("Unable to generage JWT: %v\n", err)
+			return c.String(http.StatusInternalServerError, "Unable to generage JWT")
+		}
+		err = s.store.UpdateToken(foundUser.ID, jwt)
 		if err != nil {
 			return err
 		}
 
-		jwt, err := s.authorizer.GenerateJWT(foundUser.ID)
-		if err != nil {
-			return err
-		}
-
-		response := UserApiResponse2{User: user, Token: jwt}
+		response := UserApiResponse{User: SanitizedUser{foundUser.Name, foundUser.Email}, Token: jwt}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
 }

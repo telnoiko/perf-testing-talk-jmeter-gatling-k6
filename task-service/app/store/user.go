@@ -1,9 +1,9 @@
 package store
 
 type User struct {
-	ID       int      `json:"-"`
+	ID       int      `json:"id"`
 	Name     string   `json:"name"`
 	Email    string   `json:"email"`
-	Password string   `json:"-"`
-	Tokens   []string `json:"-"`
+	Password string   `json:"password"`
+	Tokens   []string `json:"tokens"`
 }

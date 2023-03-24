@@ -1,10 +1,11 @@
 package rest
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strconv"
 	"task-service/app/store"
 )
 
@@ -24,28 +25,48 @@ func NewAuth(store *store.Store) *Authorizer {
 
 func (s *Authorizer) Authorize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		token, err := bearerExtractor.ExtractToken(c.Request())
+		tokenString, err := bearerExtractor.ExtractToken(c.Request())
 		if err != nil {
 			return c.String(http.StatusUnauthorized, "Could not extract Bearer token")
 		}
 
-		claims, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 			return []byte(secretKey), nil
 		})
 		if err != nil {
-			return err
+			return c.String(http.StatusUnauthorized, "Could not parse Bearer token")
 		}
 
-		id := claims.Claims.(*jwt.StandardClaims).Id
+		var email string
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			email = claims["email"].(string)
+		}
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Could not parse id")
+		}
 
-		// todo find user by id and token
+		user, err := s.store.FindByEmail(email)
+		if err != nil {
+			return c.String(http.StatusUnauthorized, "Could not find user with token")
+		}
+
 		c.Set(UserContextKey, user)
 		return next(c)
 	}
 }
 
-func (s *Authorizer) GenerateJWT(id int) (string, error) {
-	claims := jwt.StandardClaims{Id: strconv.Itoa(id), Issuer: "task-service"}
+func (s *Authorizer) GenerateJWT(email string) (string, error) {
+	bits := make([]byte, 12)
+	_, err := rand.Read(bits)
+	if err != nil {
+		panic(err)
+	}
+
+	claims := jwt.MapClaims{
+		"email": email,
+		"iss":   "task-service",
+		"jti":   base64.StdEncoding.EncodeToString(bits),
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 
 	return token.SignedString([]byte(secretKey))
