@@ -1,4 +1,4 @@
-rebuild-backend:
+build-backend:
 	cd task-service && go mod tidy && docker compose -f docker-compose.yml build
 
 start-backend:

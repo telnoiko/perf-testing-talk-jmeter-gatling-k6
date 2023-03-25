@@ -72,3 +72,12 @@ func (s *UserStore) DeleteToken(id int, token string) error {
 	}
 	return nil
 }
+
+func (s *UserStore) DeleteAllTokens(id int) error {
+	_, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = '{}' WHERE id = $1", id)
+	if err != nil {
+		s.logger.Printf("delete user %d all tokens failed: %v\n", id, err)
+		return err
+	}
+	return nil
+}

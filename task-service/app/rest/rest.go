@@ -10,9 +10,9 @@ import (
 )
 
 type API struct {
-	echo       *echo.Echo
-	authorizer *Authorizer
-	store      *store.Store
+	echo  *echo.Echo
+	auth  *Authorizer
+	store *store.Store
 
 	userRest *user
 	taskRest *task
@@ -51,13 +51,14 @@ func (s *API) Start(port string) {
 	s.echo.GET("/", s.check())
 	s.echo.POST("/users", s.userRest.create())
 	s.echo.POST("/users/login", s.userRest.login())
-	s.echo.POST("/users/logout", s.userRest.logout(), s.authorizer.Authorize)
+	s.echo.POST("/users/logout", s.userRest.logout(), s.auth.Authorize)
+	s.echo.POST("/users/logoutAll", s.userRest.logoutAll(), s.auth.Authorize)
 
-	//e.GET("/tasks", rest.check(), s.authorizer.Authorize)
-	//e.GET("/tasks/:id", rest.check(), s.authorizer.Authorize)
-	s.echo.POST("/tasks", s.taskRest.create(), s.authorizer.Authorize)
-	//e.PUT("/tasks/:id", rest.check(), s.authorizer.Authorize)
-	//e.DELETE("/tasks/:id", rest.check(), s.authorizer.Authorize)
+	s.echo.GET("/tasks", s.taskRest.getAll(), s.auth.Authorize)
+	s.echo.GET("/tasks/:id", s.taskRest.getById(), s.auth.Authorize)
+	s.echo.POST("/tasks", s.taskRest.create(), s.auth.Authorize)
+	s.echo.PUT("/tasks/:id", s.taskRest.update(), s.auth.Authorize)
+	s.echo.DELETE("/tasks/:id", s.taskRest.delete(), s.auth.Authorize)
 
 	if err := s.echo.Start(port); err != nil && err != http.ErrServerClosed {
 		s.echo.Logger.Fatal("shutting down the server", err)

@@ -95,3 +95,17 @@ func (s *user) logout() echo.HandlerFunc {
 		return c.String(http.StatusOK, "")
 	}
 }
+
+func (s *user) logoutAll() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user := c.Get(UserContextKey).(*store.User)
+		c.Logger().Infof("logoutAll: received user: %v\n", user)
+
+		err := s.store.User.DeleteAllTokens(user.ID)
+		if err != nil {
+			return err
+		}
+
+		return c.String(http.StatusOK, "")
+	}
+}

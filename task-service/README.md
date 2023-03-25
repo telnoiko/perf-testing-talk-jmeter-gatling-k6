@@ -5,7 +5,7 @@ Docker is a prerequisite for running this application.
 #### Using makefile
 Build
 ```bash
-make rebuild-backend
+make build-backend
 ```
 
 Run
@@ -15,7 +15,7 @@ make start-backend
 
 Stop and clean database (even after pressing Ctrl+C)
 ```bash
-make rebuild-backend
+make stop-backend
 ```
 
 #### Using docker-compose
