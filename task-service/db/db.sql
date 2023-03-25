@@ -14,7 +14,7 @@ CREATE INDEX users_email_idx ON users (email);
 CREATE TABLE tasks
 (
     id          SERIAL PRIMARY KEY,
-    description TEXT NOT NULL,
-    completed   TEXT NOT NULL,
-    user_id     INT  NOT NULL REFERENCES users (id) ON UPDATE CASCADE
+    description TEXT    NOT NULL,
+    completed   BOOLEAN NOT NULL,
+    user_id     INT     NOT NULL REFERENCES users (id) ON UPDATE CASCADE
 );

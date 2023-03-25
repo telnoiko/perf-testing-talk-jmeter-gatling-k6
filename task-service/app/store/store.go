@@ -3,75 +3,36 @@ package store
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Store struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	logger echo.Logger
+
+	User *UserStore
+	Task *TaskStore
 }
 
-func New() (*Store, error) {
+func New(logger echo.Logger) (*Store, error) {
 	pool, err := pgxpool.New(context.Background(), "postgres://postgres:password@db:5432/tasks?pool_max_conns=10")
 	if err != nil {
 		log.Printf("Unable to create connection pool: %v\n", err)
 		return nil, err
 	}
-	return &Store{pool}, nil
-}
 
-func (s *Store) Save(user *User) (int, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return 0, err
+	user := &UserStore{
+		pool:   pool,
+		logger: logger,
 	}
 
-	var id int
-	_, err = s.pool.Exec(context.Background(), "INSERT INTO users (name, email, password, tokens) VALUES ($1, $2, $3, $4) RETURNING id", user.Name, user.Email, hash, user.Tokens)
-	if err != nil {
-		log.Printf("QueryRow failed: %v\n", err)
-		return 0, err
+	task := &TaskStore{
+		pool:   pool,
+		logger: logger,
 	}
-	return id, nil
-}
 
-func (s *Store) UpdateToken(id int, token string) error {
-	_, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = array_append(tokens, $1) WHERE id = $2", token, id)
-	if err != nil {
-		log.Printf("Exec failed: %v\n", err)
-		return err
-	}
-	return nil
-}
-
-func (s *Store) FindByEmail(email string) (*User, error) {
-	var u User
-	err := s.pool.QueryRow(context.Background(), "SELECT id, name, email, password FROM users WHERE email = $1", email).Scan(&u.ID, &u.Name, &u.Email, &u.Password)
-	if err != nil {
-		log.Printf("QueryRow failed: %v\n", err)
-		return &User{}, err
-	}
-	return &u, nil
-}
-
-func (s *Store) FindByToken(email string, token string) (*User, error) {
-	var u User
-	row := s.pool.QueryRow(context.Background(), "SELECT id, name, email, password FROM users WHERE email = $1 AND tokens @> ARRAY[$2]::text[]", email, token)
-	err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password)
-	if err != nil {
-		log.Printf("didn't find user with email %d and token %s: %v\n", email, token, err)
-		return &User{}, err
-	}
-	return &u, nil
-}
-
-func (s *Store) DeleteToken(id int, token string) error {
-	_, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = array_remove(tokens, $1) WHERE id = $2", token, id)
-	if err != nil {
-		log.Printf("DeleteToken failed: %v\n", err)
-		return err
-	}
-	return nil
+	return &Store{pool, logger, user, task}, nil
 }
 
 func (s *Store) Stop() {

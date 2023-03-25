@@ -1,8 +1,6 @@
 package rest
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -10,22 +8,22 @@ import (
 )
 
 var (
-	UserContextKey  = "user"
-	secretKey       = "thisissecretkey"
-	bearerExtractor = BearerExtractor{}
+	UserContextKey = "user"
+	secretKey      = "thisissecretkey"
 )
 
 type Authorizer struct {
 	store *store.Store
+	token *Token
 }
 
-func NewAuth(store *store.Store) *Authorizer {
-	return &Authorizer{store}
+func NewAuth(store *store.Store, token *Token) *Authorizer {
+	return &Authorizer{store, token}
 }
 
 func (s *Authorizer) Authorize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		tokenString, err := bearerExtractor.ExtractToken(c.Request())
+		tokenString, err := s.token.ExtractToken(c.Request())
 		if err != nil {
 			return c.String(http.StatusUnauthorized, "Could not extract Bearer token")
 		}
@@ -45,7 +43,7 @@ func (s *Authorizer) Authorize(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, "Could not parse id")
 		}
 
-		user, err := s.store.FindByToken(email, tokenString)
+		user, err := s.store.User.FindByToken(email, tokenString)
 		if err != nil {
 			return c.String(http.StatusUnauthorized, "Could not find user with token")
 		}
@@ -54,21 +52,4 @@ func (s *Authorizer) Authorize(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set(UserContextKey, user)
 		return next(c)
 	}
-}
-
-func (s *Authorizer) GenerateJWT(email string) (string, error) {
-	bits := make([]byte, 12)
-	_, err := rand.Read(bits)
-	if err != nil {
-		panic(err)
-	}
-
-	claims := jwt.MapClaims{
-		"email": email,
-		"iss":   "task-service",
-		"jti":   base64.StdEncoding.EncodeToString(bits),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-
-	return token.SignedString([]byte(secretKey))
 }

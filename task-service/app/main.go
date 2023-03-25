@@ -1,21 +1,25 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
 	"task-service/app/rest"
-	"task-service/app/store"
+	"time"
 )
 
 func main() {
 
-	store, err := store.New()
-	defer store.Stop()
-	if err != nil {
-		panic(err)
-	}
+	rest := rest.New()
+	go func() {
+		rest.Start(":1323")
+	}()
 
-	auth := rest.NewAuth(store)
-
-	rest := rest.New(auth, store)
-
-	rest.Start()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	rest.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	rest.Stop(ctx)
 }
