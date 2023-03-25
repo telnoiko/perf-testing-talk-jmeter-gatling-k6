@@ -36,7 +36,7 @@ func (s *Store) Save(user *User) (int, error) {
 }
 
 func (s *Store) UpdateToken(id int, token string) error {
-	tag, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = array_append(tokens, $1) WHERE id = $2", token, id)
+	_, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = array_append(tokens, $1) WHERE id = $2", token, id)
 	if err != nil {
 		log.Printf("Exec failed: %v\n", err)
 		return err
@@ -52,6 +52,26 @@ func (s *Store) FindByEmail(email string) (*User, error) {
 		return &User{}, err
 	}
 	return &u, nil
+}
+
+func (s *Store) FindByToken(email string, token string) (*User, error) {
+	var u User
+	row := s.pool.QueryRow(context.Background(), "SELECT id, name, email, password FROM users WHERE email = $1 AND tokens @> ARRAY[$2]::text[]", email, token)
+	err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password)
+	if err != nil {
+		log.Printf("didn't find user with email %d and token %s: %v\n", email, token, err)
+		return &User{}, err
+	}
+	return &u, nil
+}
+
+func (s *Store) DeleteToken(id int, token string) error {
+	_, err := s.pool.Exec(context.Background(), "UPDATE users SET tokens = array_remove(tokens, $1) WHERE id = $2", token, id)
+	if err != nil {
+		log.Printf("DeleteToken failed: %v\n", err)
+		return err
+	}
+	return nil
 }
 
 func (s *Store) Stop() {

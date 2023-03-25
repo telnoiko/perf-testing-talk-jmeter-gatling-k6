@@ -45,10 +45,11 @@ func (s *Authorizer) Authorize(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, "Could not parse id")
 		}
 
-		user, err := s.store.FindByEmail(email)
+		user, err := s.store.FindByToken(email, tokenString)
 		if err != nil {
 			return c.String(http.StatusUnauthorized, "Could not find user with token")
 		}
+		user.Tokens = []string{tokenString}
 
 		c.Set(UserContextKey, user)
 		return next(c)

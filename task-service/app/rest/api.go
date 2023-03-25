@@ -39,7 +39,7 @@ func (s *API) Start() {
 	s.echo.GET("/", s.check())
 	s.echo.POST("/users", s.create())
 	s.echo.POST("/users/login", s.login())
-	//e.POST("/logout", rest.check(), s.authorizer.Authorize)
+	s.echo.POST("/users/logout", s.logout(), s.authorizer.Authorize)
 
 	//e.GET("/tasks", rest.check(), s.authorizer.Authorize)
 	//e.GET("/tasks/:id", rest.check(), s.authorizer.Authorize)
@@ -112,5 +112,19 @@ func (s *API) login() echo.HandlerFunc {
 
 		response := UserApiResponse{User: SanitizedUser{foundUser.Name, foundUser.Email}, Token: jwt}
 		return c.JSONPretty(http.StatusOK, response, "  ")
+	}
+}
+
+func (s *API) logout() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user := c.Get(UserContextKey).(*store.User)
+		c.Logger().Infof("logout: received user: %v\n", user)
+
+		err := s.store.DeleteToken(user.ID, user.Tokens[0])
+		if err != nil {
+			return err
+		}
+
+		return c.String(http.StatusOK, "")
 	}
 }
