@@ -3,3 +3,6 @@
 .vscode
 **/.idea/
 .DS_Store
+
+**/.node_modules/
+jmeter.log
