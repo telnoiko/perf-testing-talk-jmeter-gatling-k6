@@ -1,12 +1,17 @@
 build-backend:
-	#cd task-service && go mod tidy
 	docker compose -f docker-compose.yml build
 
 start-backend:
-	 docker-compose -f docker-compose.yml up
+	 docker-compose -f docker-compose.yml up tasks-api db
 
-stop-backend:
+stop-all:
 	docker-compose -f docker-compose.yml down -v
 
+start-grafana:
+	docker-compose -f docker-compose.yml up -d influxdb grafana
+
+stop-grafana:
+	docker-compose -f docker-compose.yml stop influxdb grafana
+
 run-k6:
-	cd k6 && k6 run --env HOSTNAME=http://localhost:1323 --vus 10 --duration 30s script.js
+	docker-compose run k6 run --env HOSTNAME=http://tasks-api:1323 --vus 30 --duration 30s /scripts/script.js

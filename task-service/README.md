@@ -15,7 +15,7 @@ make start-backend
 
 Stop and clean database (even after pressing Ctrl+C)
 ```bash
-make stop-backend
+make stop-all
 ```
 
 #### Using docker-compose

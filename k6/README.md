@@ -3,6 +3,11 @@
 ## How to run
 
 #### Using makefile
+Prepare Grafana and InfluxDB containers
+```bash
+make start-grafana
+```
+
 Run exemplary load test or adjust the parameters in `Makefile` and run it again.
 ```bash
 make run-k6
