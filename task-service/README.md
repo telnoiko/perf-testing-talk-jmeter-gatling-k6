@@ -19,4 +19,4 @@ make stop-backend
 ```
 
 #### Using docker-compose
-Just use commands from `Makefile`
+Just use commands from `Makefile` directly

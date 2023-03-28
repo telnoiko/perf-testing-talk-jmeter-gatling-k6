@@ -8,3 +8,6 @@ Import [Postman API collection](./postman/collection.json) to explore the API of
 
 ## JMeter
 Import [JMeter test plan](./jmeter/test_plan.jmx) to run performance tests from JMeter
+
+## K6
+[K6 Load test](/k6/README.md) is similar to the JMeter test plan
