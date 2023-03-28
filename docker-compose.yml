@@ -1,13 +1,20 @@
 version: "2"
 
+networks:
+  tasks:
+  k6:
+  grafana:
+
 services:
   tasks-api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./task-service
+      dockerfile: ./Dockerfile
     image: telnoiko/tasks-api:dev
     container_name: "tasks-api"
     hostname: "tasks-api"
+    networks:
+      - tasks
     ports:
       - "1323:1323"
     logging:
@@ -19,26 +26,17 @@ services:
   db:
     image: postgres:15.2-alpine
     restart: always
+    networks:
+      - tasks
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
       POSTGRES_DB: tasks
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./db/db.sql:/docker-entrypoint-initdb.d/db.sql
+      - ./task-service/db/db.sql:/docker-entrypoint-initdb.d/db.sql
     ports:
       - "5432:5432"
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
     logging:
       driver: json-file
       options:
