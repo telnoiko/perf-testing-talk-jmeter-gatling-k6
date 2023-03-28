@@ -66,9 +66,9 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
-      - ./dashboards:/var/lib/grafana/dashboards
-      - ./grafana-dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
-      - ./grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./k6/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./k6/grafana/grafana-dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./k6/grafana/grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
 
   k6:
     image: loadimpact/k6:latest

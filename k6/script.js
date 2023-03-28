@@ -19,6 +19,7 @@ export function setup() {
     return createUser()
 }
 
+// login, create, update, delete
 export default function (data) {
     const auth = login(data.user);
     const id = createTask(auth);
