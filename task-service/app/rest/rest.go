@@ -67,7 +67,7 @@ func (s *API) Start(port string) {
 
 func (s *API) check() func(c echo.Context) error {
 	return func(c echo.Context) error {
-		return c.String(http.StatusOK, "")
+		return c.String(http.StatusOK, "running...")
 	}
 }
 

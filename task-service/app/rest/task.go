@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 	"strconv"
 	"task-service/app/store"
@@ -29,11 +30,11 @@ func (t *task) create() echo.HandlerFunc {
 		task := store.Task{}
 		c.Bind(&task)
 		task.Owner = user.ID
-		t.logger.Infof("creating task %v", task)
+		log.Printf("creating task %v", task)
 
 		err := t.store.Task.Create(&task)
 		if err != nil {
-			t.logger.Infof("creating task failed %v", err)
+			log.Printf("creating task failed %v", err)
 			return c.String(http.StatusInternalServerError, "creating task failed")
 		}
 
@@ -45,7 +46,7 @@ func (t *task) create() echo.HandlerFunc {
 func (t *task) getAll() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get(UserContextKey).(*store.User)
-		t.logger.Infof("getting all tasks for user %d", user.ID)
+		log.Printf("getting all tasks for user %d", user.ID)
 		completed := c.QueryParams().Get("completed")
 		limit := c.QueryParams().Get("limit")
 		if limit == "" {
@@ -67,7 +68,7 @@ func (t *task) getAll() echo.HandlerFunc {
 
 		tasks, err := t.store.Task.GetAll(user.ID, completed, intSkip, intLimit)
 		if err != nil {
-			t.logger.Infof("getting all tasks failed %v", err)
+			log.Printf("getting all tasks failed %v", err)
 			return c.String(http.StatusInternalServerError, "getting all tasks failed")
 		}
 
@@ -84,17 +85,17 @@ func (t *task) getById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get(UserContextKey).(*store.User)
 		id := c.Param("id")
-		t.logger.Infof("getting task %s", id)
+		log.Printf("getting task %s", id)
 
 		taskId, err := strconv.Atoi(id)
 		if err != nil {
-			t.logger.Infof("get task by id: couldn't parse id %v", err)
+			log.Printf("get task by id: couldn't parse id %v", err)
 			return c.String(http.StatusBadRequest, "get task by id: couldn't parse id")
 		}
 
 		task, err := t.store.Task.GetById(taskId, user.ID)
 		if err != nil {
-			t.logger.Infof("getting task failed %v", err)
+			log.Printf("getting task failed %v", err)
 			return c.String(http.StatusBadRequest, "getting task failed")
 		}
 
@@ -107,17 +108,17 @@ func (t *task) delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get(UserContextKey).(*store.User)
 		id := c.Param("id")
-		t.logger.Infof("deleting task %s", id)
+		log.Printf("deleting task %s", id)
 
 		taskId, err := strconv.Atoi(id)
 		if err != nil {
-			t.logger.Infof("update task: couldn't parse id:  %v", err)
+			log.Printf("update task: couldn't parse id:  %v", err)
 			return c.String(http.StatusBadRequest, "update task: couldn't parse id")
 		}
 
 		err = t.store.Task.Delete(taskId, user.ID)
 		if err != nil {
-			t.logger.Infof("deleting task failed %v", err)
+			log.Printf("deleting task failed %v", err)
 			return c.String(http.StatusInternalServerError, "creating task failed")
 		}
 
@@ -129,20 +130,20 @@ func (t *task) update() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get(UserContextKey).(*store.User)
 		id := c.Param("id")
-		t.logger.Infof("updating task %s", id)
+		log.Printf("updating task %s", id)
 
 		task := store.Task{}
 		c.Bind(&task)
 
 		taskId, err := strconv.Atoi(id)
 		if err != nil {
-			t.logger.Infof("update task: couldn't parse id:  %v", err)
+			log.Printf("update task: couldn't parse id:  %v", err)
 			return c.String(http.StatusBadRequest, "update task: couldn't parse id")
 		}
 
 		updated, err := t.store.Task.Update(taskId, user.ID, &task)
 		if err != nil {
-			t.logger.Infof("updating task failed %v", err)
+			log.Printf("updating task failed %v", err)
 			return c.String(http.StatusBadRequest, "updating task failed")
 		}
 

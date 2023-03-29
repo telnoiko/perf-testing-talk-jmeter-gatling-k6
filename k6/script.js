@@ -25,8 +25,6 @@ export default function (data) {
     const id = createTask(auth);
     updateTask(id, auth);
     deleteTask(id, auth);
-
-    sleep(1);
 }
 
 export function teardown(data) {

@@ -12,7 +12,8 @@ const urls = {
 export const createTask = (auth) => {
     const generatedTask = generateTaskData();
 
-    const response = http.post(urls.tasksUrl, JSON.stringify(generatedTask), auth);
+    const response = http.post(urls.tasksUrl,
+        JSON.stringify(generatedTask), auth);
 
     return response.json().id
 }
@@ -20,7 +21,8 @@ export const createTask = (auth) => {
 export const updateTask = (id, auth) => {
     const updatedTask = generateTaskData();
 
-    const response = http.put(`${urls.tasksUrl}/${id}`, JSON.stringify(updatedTask), auth);
+    const response = http.put(`${urls.tasksUrl}/${id}`,
+        JSON.stringify(updatedTask), auth);
     updateTaskFailRate.add(response.status !== 200);
 
     return response.json().id

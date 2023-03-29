@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"net/http"
 	"task-service/app/store"
 )
@@ -27,18 +28,18 @@ func (s *user) create() func(c echo.Context) error {
 	return func(c echo.Context) error {
 		user := store.User{}
 		c.Bind(&user)
-		c.Logger().Infof("create: received user: %v\n", user)
+		log.Printf("create: received user: %v\n", user)
 
 		jwt, err := s.token.GenerateJWT(user.Email)
 		user.Tokens = append(user.Tokens, jwt)
 		if err != nil {
-			s.logger.Infof("Unable to generage JWT: %v\n", err)
+			log.Printf("Unable to generage JWT: %v\n", err)
 			return c.String(http.StatusInternalServerError, "Unable to generage JWT")
 		}
 
 		err = s.store.User.Create(&user)
 		if err != nil {
-			s.logger.Infof("Unable to create user: %v\n", err)
+			log.Printf("Unable to create user: %v\n", err)
 			return c.String(http.StatusBadRequest, "Unable to create user")
 		}
 
@@ -51,25 +52,25 @@ func (s *user) login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := store.User{}
 		c.Bind(&user)
-		c.Logger().Infof("login: received user: %v\n", user)
+		log.Printf("login: received user: %v\n", user)
 
 		foundUser, err := s.store.User.FindByEmail(user.Email)
 		if err != nil {
-			c.Logger().Warnf("FindByEmail failed: %v\n", err)
+			log.Printf("FindByEmail failed: %v\n", err)
 			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
 
-		c.Echo().Logger.Infof("foundUser: %v\n", foundUser)
+		log.Printf("foundUser: %v\n", foundUser)
 
 		err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password))
 		if err != nil {
-			c.Logger().Warnf("CompareHashAndPassword failed: %v\n", err)
+			log.Printf("CompareHashAndPassword failed: %v\n", err)
 			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
 
 		jwt, err := s.token.GenerateJWT(foundUser.Email)
 		if err != nil {
-			s.logger.Infof("Unable to generage JWT: %v\n", err)
+			log.Printf("Unable to generage JWT: %v\n", err)
 			return c.String(http.StatusInternalServerError, "Unable to generage JWT")
 		}
 		err = s.store.User.UpdateToken(foundUser.ID, jwt)
@@ -85,7 +86,7 @@ func (s *user) login() echo.HandlerFunc {
 func (s *user) logout() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get(UserContextKey).(*store.User)
-		c.Logger().Infof("logout: received user: %v\n", user)
+		log.Printf("logout: received user: %v\n", user)
 
 		err := s.store.User.DeleteToken(user.ID, user.Tokens[0])
 		if err != nil {
@@ -99,7 +100,7 @@ func (s *user) logout() echo.HandlerFunc {
 func (s *user) logoutAll() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get(UserContextKey).(*store.User)
-		c.Logger().Infof("logoutAll: received user: %v\n", user)
+		log.Printf("logoutAll: received user: %v\n", user)
 
 		err := s.store.User.DeleteAllTokens(user.ID)
 		if err != nil {
