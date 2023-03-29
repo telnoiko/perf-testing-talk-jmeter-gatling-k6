@@ -1,14 +1,17 @@
 FROM golang:1.20-alpine as builder
-
-ADD . /build
 WORKDIR /build
 
-RUN go build -o tasks-api ./app
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+COPY ./app ./app
 
-FROM golang:1.20-alpine
+RUN go build -o tasks ./app
+
+FROM scratch
 
 WORKDIR /srv
 
-COPY --from=builder /build/tasks-api /srv/tasks-api
+COPY --from=builder /build/tasks /srv/tasks
 
-CMD ["/srv/tasks-api"]
+CMD ["/srv/tasks"]

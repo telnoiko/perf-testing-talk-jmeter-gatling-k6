@@ -6,13 +6,13 @@ networks:
   grafana:
 
 services:
-  tasks-api:
+  tasks:
     build:
       context: ./task-service
       dockerfile: ./Dockerfile
-    image: telnoiko/tasks-api:dev
-    container_name: "tasks-api"
-    hostname: "tasks-api"
+    image: telnoiko/tasks:dev
+    container_name: "tasks"
+    hostname: "tasks"
     networks:
       - tasks
     ports:
@@ -25,6 +25,7 @@ services:
 
   db:
     image: postgres:15.2-alpine
+    container_name: "postgres"
     restart: always
     networks:
       - tasks
