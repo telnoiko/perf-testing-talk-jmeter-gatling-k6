@@ -28,8 +28,7 @@ function authHeaders(token) {
 export const createUser = () => {
     const generatedData = generateUserData();
 
-    const res = http.post(urls.createUser,
-        JSON.stringify(generatedData), params);
+    const res = http.post(urls.createUser, JSON.stringify(generatedData), params);
     createUserFailRate.add(res.status !== 200);
 
     const headers = authHeaders(res.json().token);
@@ -43,8 +42,7 @@ export const login = (user) => {
         email: user.email,
         password: user.password,
     }
-    const res = http.post(urls.loginUser,
-        JSON.stringify(loginData), params);
+    const res = http.post(urls.loginUser, JSON.stringify(loginData), params);
     return authHeaders(res.json().token);
 }
 

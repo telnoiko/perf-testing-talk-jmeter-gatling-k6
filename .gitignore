@@ -3,6 +3,8 @@
 .vscode
 **/.idea/
 .DS_Store
+**/.gradle/
+**/gatling/build
 
 **/.node_modules/
 jmeter.log

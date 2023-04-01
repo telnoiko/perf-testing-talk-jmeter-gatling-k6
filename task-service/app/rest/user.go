@@ -44,7 +44,7 @@ func (s *user) create() func(c echo.Context) error {
 		}
 
 		response := UserApiResponse{User: SanitizedUser{user.Name, user.Email}, Token: jwt}
-		return c.JSONPretty(http.StatusOK, response, "  ")
+		return c.JSONPretty(http.StatusCreated, response, "  ")
 	}
 }
 
