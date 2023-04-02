@@ -3,12 +3,7 @@ import {Rate} from 'k6/metrics';
 import {generateUserData} from './seeder.js';
 
 const baseUrl = __ENV.HOSTNAME
-const urls = {
-    createUser: `${baseUrl}/users`,
-    loginUser: `${baseUrl}/users/login`,
-    logoutUser: `${baseUrl}/users/logoutAll`,
-};
-const createUserFailRate = new Rate('failed form user create');
+const createUserFailRate = new Rate('failed_user_create');
 const params = {
     headers: {
         'Content-Type': 'application/json',
@@ -28,7 +23,7 @@ function authHeaders(token) {
 export const createUser = () => {
     const generatedData = generateUserData();
 
-    const res = http.post(urls.createUser, JSON.stringify(generatedData), params);
+    const res = http.post(`${baseUrl}/users`, JSON.stringify(generatedData), params);
     createUserFailRate.add(res.status !== 201);
 
     const headers = authHeaders(res.json().token);
@@ -42,10 +37,10 @@ export const login = (user) => {
         email: user.email,
         password: user.password,
     }
-    const res = http.post(urls.loginUser, JSON.stringify(loginData), params);
+    const res = http.post(`${baseUrl}/users/login`, JSON.stringify(loginData), params);
     return authHeaders(res.json().token);
 }
 
 export const logoutUser = (params) => {
-     http.post(urls.logoutUser, null, params);
+     http.post(`${baseUrl}/users/logoutAll`, null, params);
 }

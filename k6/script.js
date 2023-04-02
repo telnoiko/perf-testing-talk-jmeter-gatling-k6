@@ -7,13 +7,13 @@ export const options = {
     vus: 1,
     duration: '1s',
     thresholds: {
-        'failed form task update': ['rate<0.1'],
-        'failed form user create': ['rate<0.1'],
+        'failed_task_update': ['rate<0.1'],
+        'failed_user_create': ['rate<0.1'],
         'http_req_duration': ['p(95)<400']
     }
 };
-const updateTaskFailRate = new Rate('failed form task update');
-const createUserFailRate = new Rate('failed form user create');
+const updateTaskFailRate = new Rate('failed_task_update');
+const createUserFailRate = new Rate('failed_user_create');
 
 export function setup() {
     return createUser()

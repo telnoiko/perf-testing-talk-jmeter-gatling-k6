@@ -5,6 +5,7 @@
 .DS_Store
 **/.gradle/
 **/gatling/build
+k6/generated
 
 **/.node_modules/
 jmeter.log

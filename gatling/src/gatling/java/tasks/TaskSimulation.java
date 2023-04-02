@@ -27,7 +27,7 @@ public class TaskSimulation extends Simulation {
 
     {
         setUp(
-                active.injectOpen(rampUsers(5).during(10))
+                active.injectOpen(rampUsers(30).during(30))
         ).protocols(httpProtocol);
     }
 }
