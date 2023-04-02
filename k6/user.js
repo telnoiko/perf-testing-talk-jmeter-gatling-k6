@@ -47,6 +47,5 @@ export const login = (user) => {
 }
 
 export const logoutUser = (params) => {
-    const response = http.post(urls.logoutUser, null, params);
-    console.log(`logoutUser: ${JSON.stringify(response)}`);
+     http.post(urls.logoutUser, null, params);
 }

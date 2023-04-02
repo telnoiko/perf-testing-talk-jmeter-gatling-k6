@@ -19,7 +19,6 @@ export function setup() {
     return createUser()
 }
 
-// login, create, update, delete
 export default function (data) {
     const auth = login(data.user);
     const id = createTask(auth);
@@ -28,6 +27,5 @@ export default function (data) {
 }
 
 export function teardown(data) {
-    console.log(`teardown: ${JSON.stringify(data)} `);
     logoutUser(data.authHeaders);
 }
