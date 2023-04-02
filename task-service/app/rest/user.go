@@ -93,7 +93,7 @@ func (s *user) logout() echo.HandlerFunc {
 			return err
 		}
 
-		return c.String(http.StatusOK, "")
+		return c.NoContent(http.StatusOK)
 	}
 }
 
@@ -107,6 +107,6 @@ func (s *user) logoutAll() echo.HandlerFunc {
 			return err
 		}
 
-		return c.String(http.StatusOK, "")
+		return c.NoContent(http.StatusOK)
 	}
 }

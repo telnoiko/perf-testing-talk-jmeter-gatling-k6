@@ -4,17 +4,17 @@ Docker is a prerequisite for running this application.
 
 #### Using makefile
 Build
-```bash
+```shell
 make build-backend
 ```
 
 Run
-```bash
+```shell
 make start-backend
 ```
 
 Stop and clean database (even after pressing Ctrl+C)
-```bash
+```shell
 make stop-all
 ```
 

@@ -39,7 +39,7 @@ func (t *task) create() echo.HandlerFunc {
 		}
 
 		response := SanitizedTask{ID: task.ID, Description: task.Description, Completed: task.Completed}
-		return c.JSONPretty(http.StatusOK, response, "  ")
+		return c.JSONPretty(http.StatusCreated, response, "  ")
 	}
 }
 
@@ -122,7 +122,7 @@ func (t *task) delete() echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, "creating task failed")
 		}
 
-		return c.NoContent(http.StatusOK)
+		return c.NoContent(http.StatusNoContent)
 	}
 }
 

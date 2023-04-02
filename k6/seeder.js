@@ -1,7 +1,4 @@
-import {
-    randomString,
-    uuidv4,
-} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import {randomString,} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 export const generateUserData = () => ({
     name: `name-${randomString(3)}`,

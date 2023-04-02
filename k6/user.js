@@ -29,7 +29,7 @@ export const createUser = () => {
     const generatedData = generateUserData();
 
     const res = http.post(urls.createUser, JSON.stringify(generatedData), params);
-    createUserFailRate.add(res.status !== 200);
+    createUserFailRate.add(res.status !== 201);
 
     const headers = authHeaders(res.json().token);
 

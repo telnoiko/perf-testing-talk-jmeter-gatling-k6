@@ -15,15 +15,13 @@ import java.util.stream.Stream;
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
+import static tasks.model.User.generateRandomUser;
 
 public class UserRequests {
     JsonMapper mapper = new JsonMapper();
     Iterator<Map<String, Object>> userFeeder =
             Stream.generate((Supplier<Map<String, Object>>) () -> {
-                        String email = RandomStringUtils.randomAlphabetic(3) + "@example.com";
-                        String password = RandomStringUtils.randomAlphabetic(8);
-                        String name = "name-" + RandomStringUtils.randomAlphabetic(3);
-                        User u = new User(name, email, password);
+                        User u = generateRandomUser();
                         String serializedUser = null;
                         try {
                             serializedUser = mapper.writeValueAsString(u);
@@ -33,6 +31,7 @@ public class UserRequests {
                         return Collections.singletonMap("user", serializedUser);
                     }
             ).iterator();
+
     public ChainBuilder create = feed(userFeeder)
             .exec(http("create user").post("/users")
                     .body(StringBody("#{user}"))

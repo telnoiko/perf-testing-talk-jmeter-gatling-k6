@@ -2,16 +2,13 @@ build-backend:
 	docker compose -f docker-compose.yml build
 
 start-backend:
-	 docker-compose -f docker-compose.yml up tasks db
+	 docker-compose -f docker-compose.yml up tasks
 
 stop-all:
 	docker-compose -f docker-compose.yml down -v
 
-start-grafana:
-	docker-compose -f docker-compose.yml up -d influxdb grafana
-
-stop-grafana:
-	docker-compose -f docker-compose.yml stop influxdb grafana
+run-gatling:
+	cd gatling && ./gradlew gatlingRun-tasks.TaskSimulation
 
 run-k6:
 	docker-compose run k6 run \

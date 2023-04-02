@@ -11,8 +11,10 @@ import static io.gatling.javaapi.http.HttpDsl.http;
 public class TaskSimulation extends Simulation {
 
     UserRequests user = new UserRequests();
+    TaskRequests task = new TaskRequests();
 
-    ScenarioBuilder active = scenario("active users").exec(user.create, user.login, user.logout);
+    ScenarioBuilder active = scenario("active users")
+            .exec(user.create, user.login, task.create, task.update, task.delete,  user.logout);
 
 //    ScenarioBuilder lazy = scenario("active users").exec(search, browse);
 

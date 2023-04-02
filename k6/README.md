@@ -3,14 +3,21 @@
 ## How to run
 
 #### Using makefile
-Prepare Grafana and InfluxDB containers
-```bash
-make start-grafana
+Optionally to see logs, start up the `task` service
+```shell
+make start-backend
 ```
 
 Run exemplary load test or adjust the parameters in `Makefile` and run it again.
-```bash
+```shell
 make run-k6
+```
+
+Access the grafana dashboard at `http://localhost:3000`
+
+To stop all running services
+```shell
+make stop-all
 ```
 
 #### Using docker-compose
