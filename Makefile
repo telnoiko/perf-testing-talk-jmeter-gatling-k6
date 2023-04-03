@@ -22,12 +22,11 @@ run-k6:
 #		--http-debug="full" \
 
 convert-postman-k6:
-	postman-to-k6 ./postman/collection.json -o ./k6/generated/script.js
+	postman-to-k6 ./postman/collection.json -e ./postman/environment.json -s -o ./k6/generated/script.js
 
 run-k6-converted:
 	docker-compose run k6 run \
-		--env HOSTNAME=http://tasks:1323 \
-		--vus 30 \
+		--vus 2 \
 		--duration 30s \
 		/scripts/generated/script.js
 #		--http-debug="full" \

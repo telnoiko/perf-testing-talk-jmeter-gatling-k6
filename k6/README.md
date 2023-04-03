@@ -20,6 +20,16 @@ To stop all running services
 make stop-all
 ```
 
+To convert existing postman collection from `postman` folder to k6 script
+```shell
+make convert-postman-k6
+```
+
+To run generated k6 script
+```shell
+make run-k6-converted
+```
+
 #### Using docker-compose
 Just use commands from `Makefile` directly
 

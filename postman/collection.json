@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "0293f3c6-a562-4025-b3b5-f7aa4e11fee2",
-		"name": "Task manager",
+		"name": "Task tracker",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -13,22 +13,47 @@
 					"script": {
 						"exec": [
 							"if (pm.response.code === 201) {",
-							"    pm.environment.set('authToken', pm.response.json().token)",
-							"}"
+							"    pm.collectionVariables.set('authToken', pm.response.json().token)",
+							"}",
+							"pm.test(\"Status code is 201\", () => {",
+							"  pm.response.to.have.status(201);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set('email', pm.variables.replaceIn('{{$randomEmail}}'))",
+							"pm.collectionVariables.set('password', pm.variables.replaceIn('{{$randomPassword}}'))",
+							""
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
 			"request": {
 				"auth": {
 					"type": "noauth"
 				},
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"K\",\n    \"email\": \"me@example.com\",\n    \"password\": \"testPassword\"\n}",
+					"raw": "{\n    \"name\": \"{{$randomFirstName}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -55,22 +80,36 @@
 					"script": {
 						"exec": [
 							"if (pm.response.code === 200) {",
-							"    pm.environment.set('authToken', pm.response.json().token)",
-							"}"
+							"    pm.collectionVariables.set('authToken', pm.response.json().token)",
+							"}",
+							"pm.test(\"Status code is 200\", () => {",
+							"  pm.response.to.have.status(200);",
+							"});"
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
 			"request": {
 				"auth": {
 					"type": "noauth"
 				},
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"email\": \"me@example.com\",\n    \"password\": \"testPassword\"\n}",
+					"raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -92,12 +131,39 @@
 		},
 		{
 			"name": "Create Task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    pm.collectionVariables.set('taskId', pm.response.json().id)",
+							"}",
+							"pm.test(\"Status code is 201\", () => {",
+							"  pm.response.to.have.status(201);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"description\": \"test endpoint\",\n    \"completed\": true\n} ",
+					"raw": "{\n    \"description\": \"{{$randomBs}}\",\n    \"completed\": {{$randomBoolean}}\n} ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -118,11 +184,24 @@
 		},
 		{
 			"name": "Read Tasks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", () => {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/tasks?completed=true&skip=4&limit=10",
+					"raw": "{{url}}/tasks?completed=true",
 					"host": [
 						"{{url}}"
 					],
@@ -136,11 +215,13 @@
 						},
 						{
 							"key": "skip",
-							"value": "4"
+							"value": "4",
+							"disabled": true
 						},
 						{
 							"key": "limit",
-							"value": "10"
+							"value": "10",
+							"disabled": true
 						}
 					]
 				}
@@ -149,17 +230,30 @@
 		},
 		{
 			"name": "Read Task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", () => {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/tasks/some_id",
+					"raw": "{{url}}/tasks/{{taskId}}",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"tasks",
-						"some_id"
+						"{{taskId}}"
 					]
 				}
 			},
@@ -167,12 +261,25 @@
 		},
 		{
 			"name": "Update Task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", () => {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"description\": \"test endpoint!\",\n    \"completed\": true\n} ",
+					"raw": "{\n    \"description\": \"{{$randomBs}}\",\n    \"completed\": {{$randomBoolean}}\n} ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -180,13 +287,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/tasks/some_id",
+					"raw": "{{url}}/tasks/{{taskId}}",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"tasks",
-						"some_id"
+						"{{taskId}}"
 					]
 				}
 			},
@@ -194,46 +301,30 @@
 		},
 		{
 			"name": "Delete Task",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/tasks/some_id",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"tasks",
-						"some_id"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Logout User",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							""
+							"pm.test(\"Status code is 204\", () => {",
+							"  pm.response.to.have.status(204);",
+							"});"
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"method": "POST",
+				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/users/logout",
+					"raw": "{{url}}/tasks/{{taskId}}",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"users",
-						"logout"
+						"tasks",
+						"{{taskId}}"
 					]
 				}
 			},
@@ -246,7 +337,9 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							""
+							"pm.test(\"Status code is 200\", () => {",
+							"  pm.response.to.have.status(200);",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -297,6 +390,24 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "email",
+			"value": ""
+		},
+		{
+			"key": "password",
+			"value": ""
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "taskId",
+			"value": ""
 		}
 	]
 }
